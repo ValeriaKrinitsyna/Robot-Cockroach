@@ -19,6 +19,7 @@ namespace Робот_Таракан
         List<Cockroach> LC;//Список для хранения созданных Тараканов
         List<PictureBox> PB;//Список для хранения созданных объектов PictureBox
         int algStep = 0;
+        string skin = "cockroach.png";
 
         public Form1()
         {
@@ -32,7 +33,7 @@ namespace Робот_Таракан
 
         private void NewBtn_Click(object sender, EventArgs e)
         {
-            Cockroach cockroach = new Cockroach(new Bitmap("cockroach.png"));
+            Cockroach cockroach = new Cockroach(new Bitmap(skin));
             cockroach.image = new Bitmap(cockroach.image, new Size(100, 100));
             PictureBox p = new PictureBox();
             p.MouseMove += new MouseEventHandler(IMouseMove);
@@ -50,12 +51,19 @@ namespace Робот_Таракан
         {
             if (e.Button == MouseButtons.Left)
             {
-                int k = PB.IndexOf(sender as PictureBox);//запоминаем номер нажатого компонента
-                PictureBox workpb = sender as PictureBox;//объявляет его рабочим
+                int k = PB.IndexOf(sender as PictureBox); //запоминаем номер нажатого компонента
+                if (!(ModifierKeys == Keys.Control)) //если ctrl не нажат
+                {
+                    for (int i = 0; i < workpb.Count; i++)
+                        workpb[i].BackColor = Color.Transparent; //делаем цвет прозрачный
+                    workpb.Clear();
+                    workCockroach.Clear();
+                }
+                ((PictureBox)sender).BackColor = Color.BlueViolet; //выделение активно
+                workpb.Add(sender as PictureBox);//объявляет его рабочим
                 workCockroach.Add(LC[k]);//по найденному номеру находим Таракана в списке
             }
         }
-
         private void IMouseMove(object sender, MouseEventArgs e) //перетаскивание таракана по полю
         {
             if (e.Button == MouseButtons.Left)
@@ -177,14 +185,25 @@ namespace Робот_Таракан
             Algorithm.Items.Add((sender as Button).Text);
         }
 
-        private void ChangeImageBtn_Click(object sender, EventArgs e)
+        private void ChangeImageBtn_Click(object sender, EventArgs e) //новый таракан будет создан с новой картинкой
         {
-
+            OpenFileDialog file = new OpenFileDialog();
+            file.ShowDialog();
+            if (file.FileName != "") skin = file.FileName;
         }
 
         private void DeleteBtn_Click(object sender, EventArgs e)
         {
-
+            for (int i = 0; i < workCockroach.Count; i++)
+            {
+                workpb[i].Dispose();
+                LC.Remove(workCockroach[i]);
+                PB.Remove(workpb[i]);
+            }
+            workCockroach.Clear();
+            workpb.Clear();
+            Field.Refresh();
+            RePaint();
         }
     }
 }
